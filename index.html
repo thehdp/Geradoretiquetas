@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Etiquetas para cajas de módulos - EL REPA</title>
+    <title>Etiquetas para cajas de módulos</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CDN -->
@@ -12,6 +12,15 @@
         /* Estilos personalizados adicionales y para impresión */
         body {
             font-family: 'Inter', Arial, sans-serif;
+        }
+
+        .app-logo { /* Nuevo estilo para el logo principal */
+            max-width: 250px; /* Ancho máximo del logo en el encabezado */
+            max-height: 80px; /* Altura máxima del logo */
+            margin-bottom: 0.75rem; /* Espacio debajo del logo (mb-3 de Tailwind) */
+            display: block; /* Asegurar que la imagen sea un bloque */
+            margin-left: auto; /* Centrar el logo si el contenedor es más ancho */
+            margin-right: auto;
         }
 
         .a4-page {
@@ -42,16 +51,20 @@
             height: 7cm;
             border: 1px solid #000;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            /* flex-direction: column; Ya no es necesario apilar logo y texto aquí */
+            align-items: center;    
+            justify-content: center; 
             padding: 5px; 
             box-sizing: border-box;
             background: white;
             color: black;
             overflow: hidden; 
-            word-break: break-word;
             text-align: center;
+            word-break: break-word; /* Para el texto de la etiqueta */
         }
+
+        /* .label-logo y .label-text ya no son necesarios aquí */
+
 
         /* Estilos de impresión */
         @media print {
@@ -123,7 +136,10 @@
     <div class="container w-full max-w-4xl mx-auto flex flex-col">
         <!-- Contenedor de Controles -->
         <div class="controls-container bg-gray-700 p-6 rounded-lg shadow-xl mb-8 print-only-hidden">
-            <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Etiquetas para cajas de módulos - EL REPA</h1>
+            <!-- Logo Principal de la Aplicación -->
+            <img id="app-main-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Logo Principal" class="app-logo"> <!-- src inicial con pixel transparente -->
+
+            <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Etiquetas para cajas de módulos</h1>
             
             <div class="input-group mb-6">
                  <label for="labels-textarea" class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-edit icon mr-1"></i>Textos para las Etiquetas (uno por línea, 12 por página):</label>
@@ -132,7 +148,7 @@
 
             <div class="flex flex-wrap justify-center gap-4">
                 <button id="generate-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">
-                    <i class="fas fa-magic icon mr-2"></i>Generar Etiquetas
+                    <i class="fas fa-magic icon mr-2"></i>Generar Etiquetas 
                 </button>
                 <button id="print-btn" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">
                     <i class="fas fa-print icon mr-2"></i>Imprimir
@@ -156,8 +172,12 @@
     <script>
         // Constantes y Configuración
         const SQUARES_PER_PAGE = 12; 
-        // MAX_LABELS ya no es necesario para limitar el total de etiquetas
         const DEFAULT_FONT_SIZE_PX = 48; 
+        // Rutas de los logos en orden de prioridad
+        const PRIMARY_LOGO_PATH = "images/LOGO.PNG";
+        const SECONDARY_LOGO_PATH = "images/APR 1.png"; // Tu logo específico como fallback
+        const PLACEHOLDER_LOGO_PATH = "https://placehold.co/250x80/EFEFEF/333333?text=EL+REPA&font=sans-serif";
+
 
         // Elementos del DOM
         const generateBtn = document.getElementById('generate-btn');
@@ -165,10 +185,26 @@
         const printBtn = document.getElementById('print-btn');
         const labelsTextarea = document.getElementById('labels-textarea'); 
         const outputContainer = document.getElementById('output');
+        const appMainLogoElement = document.getElementById('app-main-logo');
         
         // --- Inicialización y Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            // No se necesita inicialización adicional aquí
+            // Establecer el src del logo principal con lógica de fallback
+            if (appMainLogoElement) {
+                appMainLogoElement.src = PRIMARY_LOGO_PATH; 
+                appMainLogoElement.onerror = function() {
+                    console.warn(`Logo principal no encontrado en: ${PRIMARY_LOGO_PATH}. Intentando con ${SECONDARY_LOGO_PATH}.`);
+                    this.src = SECONDARY_LOGO_PATH;
+                    this.onerror = function() {
+                        console.warn(`Logo secundario no encontrado en: ${SECONDARY_LOGO_PATH}. Usando placeholder.`);
+                        this.src = PLACEHOLDER_LOGO_PATH;
+                        this.onerror = function() {
+                            console.error("No se pudo cargar ningún logo, ni siquiera el placeholder.");
+                            this.style.display = 'none';
+                        };
+                    };
+                };
+            }
         });
 
         generateBtn.addEventListener('click', generateSquares);
@@ -179,25 +215,25 @@
 
         /**
          * Ajusta el tamaño de la fuente del elemento para que su contenido quepa.
-         * @param {HTMLElement} element - El elemento cuyo texto se ajustará.
+         * @param {HTMLElement} squareElement - El elemento 'square' que contiene el texto.
          * @param {number} initialFontSize - El tamaño de fuente inicial en px.
          */
-        function fitTextToSquare(element, initialFontSize) {
+        function fitTextToSquare(squareElement, initialFontSize) {
             const MIN_FONT_SIZE = 6; 
             const MAX_ITERATIONS = 100; 
             let currentFontSize = initialFontSize;
             let iterations = 0;
 
-            element.style.fontSize = `${currentFontSize}px`;
+            squareElement.style.fontSize = `${currentFontSize}px`; // Aplicar tamaño de fuente al 'square' directamente
 
-            // Bucle para reducir el tamaño de la fuente si el texto desborda
+            // El 'square' es el contenedor directo del texto ahora.
             while (
-                (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) &&
+                (squareElement.scrollHeight > squareElement.clientHeight || squareElement.scrollWidth > squareElement.clientWidth) &&
                 currentFontSize > MIN_FONT_SIZE &&
                 iterations < MAX_ITERATIONS
             ) {
                 currentFontSize -= 1;
-                element.style.fontSize = `${currentFontSize}px`;
+                squareElement.style.fontSize = `${currentFontSize}px`;
                 iterations++;
             }
         }
@@ -205,10 +241,9 @@
 
         function generateSquares() {
             const allText = labelsTextarea.value;
-            // Dividir por salto de línea y filtrar líneas vacías
             const labelTexts = allText.split('\n').filter(text => text.trim() !== ''); 
 
-            outputContainer.innerHTML = ''; // Limpiar salida anterior
+            outputContainer.innerHTML = ''; 
 
             if (labelTexts.length === 0) { 
                 const modal = createModal("Atención", "Por favor, ingrese al menos un texto para las etiquetas en el área de texto.");
@@ -216,35 +251,32 @@
                 return;
             }
 
-            let currentPage = null; // Se inicializará en el bucle o antes si hay etiquetas
+            let currentPage = null; 
             let squareCountOnPage = 0;
 
-            // Iterar sobre todos los textos de etiquetas provistos
             for (let i = 0; i < labelTexts.length; i++) {
                 const text = labelTexts[i].trim(); 
                 
-                // Si es la primera etiqueta de una nueva página (o la primera etiqueta en general)
                 if (squareCountOnPage === 0) { 
-                     currentPage = createNewPage(); // Crear una nueva página
+                     currentPage = createNewPage(); 
                 }
                 
                 const initialFontSizePx = DEFAULT_FONT_SIZE_PX; 
 
                 const square = document.createElement('div');
                 square.className = 'square';
-                square.textContent = text;
-                
-                // Asegurarse de que currentPage no sea null antes de usar querySelector
+                square.textContent = text; // El texto va directamente en el 'square'
+                                
                 if (currentPage) {
                     currentPage.querySelector('.square-container').appendChild(square);
-                    fitTextToSquare(square, initialFontSizePx);
+                    // Ajustar el tamaño del texto después de que el 'square' esté en el DOM.
+                     fitTextToSquare(square, initialFontSizePx);
                 }
 
-                squareCountOnPage++; // Incrementar contador para la página actual
+                squareCountOnPage++; 
 
-                // Si la página actual está llena y hay más etiquetas por procesar, resetear para la siguiente iteración
                 if (squareCountOnPage >= SQUARES_PER_PAGE) {
-                    squareCountOnPage = 0; // Se reseteará para la próxima etiqueta que necesite una nueva página
+                    squareCountOnPage = 0; 
                 }
             }
         }
@@ -263,7 +295,6 @@
 
         async function exportToPDF() {
             const pages = document.querySelectorAll('.a4-page');
-            // Condición de verificación más robusta
             if (pages.length === 0 || outputContainer.children.length === 0 || !outputContainer.querySelector('.square')) {
                  const modal = createModal("Atención", "No hay etiquetas generadas para exportar. Por favor, genere las etiquetas primero.");
                  document.body.appendChild(modal);
@@ -274,7 +305,7 @@
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin icon mr-2"></i>Exportando...';
             exportBtn.disabled = true;
 
-            const { jsPDF } = window.jspdf; // Acceder a jsPDF desde el objeto window
+            const { jsPDF } = window.jspdf; 
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -284,19 +315,21 @@
             try {
                 for (let i = 0; i < pages.length; i++) {
                     if (i > 0) pdf.addPage();
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
 
                     const canvas = await html2canvas(pages[i], {
-                        scale: 2.5, // Aumentar la escala para mejor calidad de imagen
-                        useCORS: true, // Si se usaran imágenes externas
-                        logging: false, // Desactivar logs de html2canvas en consola
-                        backgroundColor: '#ffffff' // Asegurar fondo blanco para el canvas
+                        scale: 2.5, 
+                        useCORS: true, 
+                        logging: false, 
+                        backgroundColor: '#ffffff' 
                     });
                     const imgData = canvas.toDataURL('image/png');
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
                     pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
                 }
-                pdf.save(`etiquetas_cajas_modulos_EL_REPA_${Date.now()}.pdf`);
+                pdf.save(`etiquetas_cajas_modulos_${Date.now()}.pdf`); 
             } catch (error) {
                 console.error("Error al exportar a PDF:", error);
                 const modal = createModal("Error de Exportación", "Ocurrió un error al exportar a PDF. Revise la consola para más detalles.");
