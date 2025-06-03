@@ -8,32 +8,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SheetJS (xlsx.js) CDN para leer archivos Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Estilos personalizados adicionales y para impresión */
         body {
             font-family: 'Inter', Arial, sans-serif;
         }
 
-        .app-logo { /* Nuevo estilo para el logo principal */
-            max-width: 250px; /* Ancho máximo del logo en el encabezado */
-            max-height: 80px; /* Altura máxima del logo */
-            margin-bottom: 0.75rem; /* Espacio debajo del logo (mb-3 de Tailwind) */
-            display: block; /* Asegurar que la imagen sea un bloque */
-            margin-left: auto; /* Centrar el logo si el contenedor es más ancho */
+        .app-logo { 
+            max-width: 250px; 
+            max-height: 80px; 
+            margin-bottom: 0.75rem; 
+            display: block; 
+            margin-left: auto; 
             margin-right: auto;
         }
 
         .a4-page {
             width: 21cm;
             height: 29.7cm;
-            margin: 20px auto; /* Margen para visualización en pantalla */
+            margin: 20px auto; 
             background: white !important;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
             page-break-after: always;
             box-sizing: border-box;
             display: flex;
-            justify-content: center; /* Centra el square-container horizontalmente */
-            align-items: center;   /* Centra el square-container verticalmente */
+            justify-content: center; 
+            align-items: center;   
             padding: 0; 
         }
 
@@ -51,7 +53,6 @@
             height: 7cm;
             border: 1px solid #000;
             display: flex;
-            /* flex-direction: column; Ya no es necesario apilar logo y texto aquí */
             align-items: center;    
             justify-content: center; 
             padding: 5px; 
@@ -60,11 +61,8 @@
             color: black;
             overflow: hidden; 
             text-align: center;
-            word-break: break-word; /* Para el texto de la etiqueta */
+            word-break: break-word; 
         }
-
-        /* .label-logo y .label-text ya no son necesarios aquí */
-
 
         /* Estilos de impresión */
         @media print {
@@ -113,6 +111,13 @@
         .dark-mode .icon {
             color: #9ca3af; 
         }
+        .dark-mode .progress-bar-bg {
+            background-color: #374151; /* bg-gray-700 */
+        }
+        .dark-mode .progress-bar-fill {
+            background-color: #3b82f6; /* bg-blue-500 */
+        }
+
          /* Scrollbar styling for webkit browsers */
         #labels-textarea::-webkit-scrollbar {
             width: 8px;
@@ -129,6 +134,10 @@
             background: #9ca3af; 
         }
 
+        /* Estilo para el input de archivo oculto */
+        .hidden-file-input {
+            display: none;
+        }
     </style>
 </head>
 <body class="dark-mode min-h-screen flex flex-col items-center p-4 sm:p-6">
@@ -136,11 +145,26 @@
     <div class="container w-full max-w-4xl mx-auto flex flex-col">
         <!-- Contenedor de Controles -->
         <div class="controls-container bg-gray-700 p-6 rounded-lg shadow-xl mb-8 print-only-hidden">
-            <!-- Logo Principal de la Aplicación -->
-            <img id="app-main-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Logo Principal" class="app-logo"> <!-- src inicial con pixel transparente -->
+            <img id="app-main-logo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Logo Principal" class="app-logo">
 
             <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Etiquetas para cajas de módulos</h1>
             
+            <!-- Sección de Carga de Archivo -->
+            <div class="file-upload-section mb-6 p-4 bg-gray-800 rounded-lg border border-gray-600">
+                <label for="file-upload-button" class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-file-upload icon mr-1"></i>Cargar lista de etiquetas desde archivo (.txt o .xlsx):</label>
+                <input type="file" id="file-input" class="hidden-file-input" accept=".txt,.xlsx">
+                <button id="file-upload-button" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-150 ease-in-out">
+                    <i class="fas fa-folder-open icon mr-2"></i>Seleccionar Archivo
+                </button>
+                <div id="file-progress-container" class="mt-3 hidden">
+                    <p id="file-name-display" class="text-xs text-gray-300 truncate mb-1"></p>
+                    <div class="progress-bar-bg w-full bg-gray-700 rounded-full h-2.5">
+                        <div id="file-progress-bar" class="progress-bar-fill bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p id="file-status-message" class="text-xs text-gray-400 mt-1"></p>
+                </div>
+            </div>
+
             <div class="input-group mb-6">
                  <label for="labels-textarea" class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-edit icon mr-1"></i>Textos para las Etiquetas (uno por línea, 12 por página):</label>
                 <textarea id="labels-textarea" rows="6" class="w-full p-3 bg-gray-600 text-white border border-gray-500 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Etiqueta 1&#10;Etiqueta 2&#10;Etiqueta 3..."></textarea>
@@ -173,11 +197,9 @@
         // Constantes y Configuración
         const SQUARES_PER_PAGE = 12; 
         const DEFAULT_FONT_SIZE_PX = 48; 
-        // Rutas de los logos en orden de prioridad
         const PRIMARY_LOGO_PATH = "images/LOGO.PNG";
-        const SECONDARY_LOGO_PATH = "images/APR 1.png"; // Tu logo específico como fallback
+        const SECONDARY_LOGO_PATH = "images/APR 1.png"; 
         const PLACEHOLDER_LOGO_PATH = "https://placehold.co/250x80/EFEFEF/333333?text=EL+REPA&font=sans-serif";
-
 
         // Elementos del DOM
         const generateBtn = document.getElementById('generate-btn');
@@ -187,9 +209,16 @@
         const outputContainer = document.getElementById('output');
         const appMainLogoElement = document.getElementById('app-main-logo');
         
+        // Elementos para carga de archivo
+        const fileInput = document.getElementById('file-input');
+        const fileUploadButton = document.getElementById('file-upload-button');
+        const fileProgressContainer = document.getElementById('file-progress-container');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileProgressBar = document.getElementById('file-progress-bar');
+        const fileStatusMessage = document.getElementById('file-status-message');
+        
         // --- Inicialización y Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Establecer el src del logo principal con lógica de fallback
             if (appMainLogoElement) {
                 appMainLogoElement.src = PRIMARY_LOGO_PATH; 
                 appMainLogoElement.onerror = function() {
@@ -210,6 +239,12 @@
         generateBtn.addEventListener('click', generateSquares);
         exportBtn.addEventListener('click', exportToPDF);
         printBtn.addEventListener('click', () => window.print());
+
+        fileUploadButton.addEventListener('click', () => {
+            fileInput.click(); // Abre el diálogo de selección de archivo
+        });
+
+        fileInput.addEventListener('change', handleFileUpload);
         
         // --- Funciones Principales ---
 
@@ -224,9 +259,8 @@
             let currentFontSize = initialFontSize;
             let iterations = 0;
 
-            squareElement.style.fontSize = `${currentFontSize}px`; // Aplicar tamaño de fuente al 'square' directamente
+            squareElement.style.fontSize = `${currentFontSize}px`; 
 
-            // El 'square' es el contenedor directo del texto ahora.
             while (
                 (squareElement.scrollHeight > squareElement.clientHeight || squareElement.scrollWidth > squareElement.clientWidth) &&
                 currentFontSize > MIN_FONT_SIZE &&
@@ -238,7 +272,6 @@
             }
         }
 
-
         function generateSquares() {
             const allText = labelsTextarea.value;
             const labelTexts = allText.split('\n').filter(text => text.trim() !== ''); 
@@ -246,7 +279,7 @@
             outputContainer.innerHTML = ''; 
 
             if (labelTexts.length === 0) { 
-                const modal = createModal("Atención", "Por favor, ingrese al menos un texto para las etiquetas en el área de texto.");
+                const modal = createModal("Atención", "Por favor, ingrese al menos un texto para las etiquetas en el área de texto o cargue un archivo.");
                 document.body.appendChild(modal);
                 return;
             }
@@ -265,11 +298,10 @@
 
                 const square = document.createElement('div');
                 square.className = 'square';
-                square.textContent = text; // El texto va directamente en el 'square'
+                square.textContent = text; 
                                 
                 if (currentPage) {
                     currentPage.querySelector('.square-container').appendChild(square);
-                    // Ajustar el tamaño del texto después de que el 'square' esté en el DOM.
                      fitTextToSquare(square, initialFontSizePx);
                 }
 
@@ -378,6 +410,95 @@
             });
             return modalOverlay;
         }
+
+        // --- Funciones para Carga de Archivo ---
+        function updateProgress(value, message = '') {
+            fileProgressBar.style.width = `${value}%`;
+            fileStatusMessage.textContent = message;
+            if (value === 100 && !message) {
+                fileStatusMessage.textContent = '¡Archivo procesado!';
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            fileNameDisplay.textContent = file.name;
+            fileProgressContainer.classList.remove('hidden');
+            updateProgress(0, 'Iniciando carga...');
+
+            const reader = new FileReader();
+
+            reader.onloadstart = () => {
+                updateProgress(10, 'Archivo seleccionado...');
+            };
+
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const percentage = Math.round((e.loaded / e.total) * 100);
+                    // Actualizar solo si es significativamente diferente para evitar parpadeo
+                    // La barra se actualizará principalmente en etapas discretas para este tipo de carga
+                    if (percentage > 10 && percentage < 70) {
+                         updateProgress(percentage, 'Leyendo archivo...');
+                    }
+                }
+            };
+            
+            reader.onload = (e) => {
+                updateProgress(70, 'Procesando contenido...');
+                try {
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    let lines = [];
+
+                    if (fileExtension === 'txt') {
+                        lines = e.target.result.split('\n').map(line => line.trim()).filter(line => line);
+                    } else if (fileExtension === 'xlsx') {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, {type: 'array'});
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        // Convertir hoja a array de arrays, tomando solo la primera columna
+                        const sheetData = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval:""});
+                        lines = sheetData.map(row => row[0] ? String(row[0]).trim() : "").filter(line => line);
+                    } else {
+                        updateProgress(0, 'Error: Tipo de archivo no soportado.');
+                        createModal("Error de Archivo", "Por favor, sube un archivo .txt o .xlsx.");
+                        return;
+                    }
+                    
+                    labelsTextarea.value = lines.join('\n');
+                    updateProgress(100, `Se cargaron ${lines.length} etiquetas.`);
+                    
+                    // Opcional: ocultar la barra después de un tiempo
+                    setTimeout(() => {
+                        fileProgressContainer.classList.add('hidden');
+                        updateProgress(0, ''); // Resetear para la próxima carga
+                        fileNameDisplay.textContent = '';
+                    }, 3000);
+
+                } catch (error) {
+                    console.error("Error procesando el archivo:", error);
+                    updateProgress(0, 'Error al procesar el archivo.');
+                    createModal("Error de Procesamiento", "Hubo un problema al leer el contenido del archivo.");
+                }
+            };
+
+            reader.onerror = () => {
+                updateProgress(0, 'Error al leer el archivo.');
+                createModal("Error de Lectura", "No se pudo leer el archivo seleccionado.");
+            };
+            
+            // Leer el archivo
+            if (file.name.split('.').pop().toLowerCase() === 'xlsx') {
+                reader.readAsArrayBuffer(file); // Para archivos Excel
+            } else {
+                reader.readAsText(file); // Para archivos de texto
+            }
+        }
+
     </script>
 </body>
 </html>
