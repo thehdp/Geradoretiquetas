@@ -3,47 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="images/favicon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
-    <link rel="manifest" href="site.webmanifest" />
-    <title>Generador de Etiquetas - Dark</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Generador de etiquetas para módulos EL REPA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Estilos personalizados adicionales y para impresión */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        .a4-page {
+            width: 21cm;
+            height: 29.7cm;
+            margin: 20px auto; /* Margen para visualización en pantalla */
+            background: white !important;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            page-break-after: always;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center; /* Centra el square-container horizontalmente */
+            align-items: center;   /* Centra el square-container verticalmente */
+            padding: 0; /* Eliminamos padding para que el container de 21x28cm se posicione bien */
+        }
+
+        .square-container {
+            display: grid;
+            grid-template-columns: repeat(3, 7cm); /* 3 columnas de 7cm */
+            grid-template-rows: repeat(4, 7cm);    /* 4 filas de 7cm */
+            gap: 0; /* Sin espacio entre cuadrados */
+            width: 21cm;  /* Ancho total: 3 * 7cm = 21cm */
+            height: 28cm; /* Alto total: 4 * 7cm = 28cm */
+            /* Este contenedor se centrará en .a4-page gracias a flexbox */
+        }
+
+        .square {
+            width: 7cm;
+            height: 7cm;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px; /* Un pequeño padding interno para el texto */
+            box-sizing: border-box;
+            background: white;
+            color: black;
+            overflow: hidden; /* Importante: oculta el texto que desborda */
+            word-break: break-word;
+            text-align: center;
+            /* El tamaño de fuente inicial es 48px, ajustado por JS */
+        }
+
+        /* Estilos de impresión */
+        @media print {
+            body {
+                margin: 0;
+                background-color: white;
+            }
+            .controls-container, .print-only-hidden {
+                display: none !important;
+            }
+            .a4-page {
+                box-shadow: none;
+                margin: 0 auto; /* Centrar la página en la vista de impresión si es necesario */
+                padding: 0; /* Sin padding para usar todo el espacio */
+                width: 21cm;
+                height: 29.7cm; /* Usar toda la altura A4 */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .square-container {
+                gap: 0;
+            }
+            .square {
+                border: 1px solid #333;
+                padding: 5px;
+            }
+        }
+
+        /* Estilos para el tema oscuro base */
+        .dark-mode {
+            background-color: #1f2937; /* bg-gray-800 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        .dark-mode .controls-container {
+            background-color: #374151; /* bg-gray-700 */
+        }
+        .dark-mode label, .dark-mode h1 {
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        .dark-mode input, .dark-mode select { /* Aunque 'select' ya no se usa, mantenemos el estilo por si acaso */
+            background-color: #4b5563; /* bg-gray-600 */
+            color: #f3f4f6; /* text-gray-100 */
+            border-color: #6b7280; /* border-gray-500 */
+        }
+        .dark-mode .text-input-group {
+            background-color: #4b5563; /* bg-gray-600 */
+        }
+        .dark-mode .icon {
+            color: #9ca3af; /* text-gray-400 */
+        }
+         /* Scrollbar styling for webkit browsers */
+        .text-inputs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .text-inputs-container::-webkit-scrollbar-track {
+            background: #4b5563; /* bg-gray-600 */
+            border-radius: 10px;
+        }
+        .text-inputs-container::-webkit-scrollbar-thumb {
+            background: #6b7280; /* bg-gray-500 */
+            border-radius: 10px;
+        }
+        .text-inputs-container::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; /* bg-gray-400 */
+        }
+
+    </style>
 </head>
-<body>
-    <div class="container">
-        <div class="controls">
-            <h1><i class="fas fa-tags icon"></i>Generador de Etiquetas</h1>
+<body class="dark-mode min-h-screen flex flex-col items-center p-4 sm:p-6">
+
+    <div class="container w-full max-w-4xl mx-auto flex flex-col">
+        <!-- Contenedor de Controles -->
+        <div class="controls-container bg-gray-700 p-6 rounded-lg shadow-xl mb-8 print-only-hidden">
+            <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Generador de etiquetas para módulos EL REPA</h1>
             
-            <div class="input-group">
-                <label for="font-size"><i class="fas fa-text-height icon"></i>Tamaño de texto (px):</label>
-                <select id="font-size">
-                    <option value="32">32</option>
-                    <option value="24">24</option>
-                    <option value="48">48</option>
-                </select>
+            <!-- Sección de selección de tamaño de fuente eliminada -->
+
+            <div class="input-group mb-6">
+                 <label class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-edit icon mr-1"></i>Textos para las 12 Etiquetas (Fuente Predeterminada 48px):</label>
+                <div id="text-inputs-container" class="text-inputs-container max-h-[60vh] overflow-y-auto p-4 bg-gray-800 rounded-md border border-gray-600 space-y-4">
+                    <!-- Inputs dinámicos de texto se generan aquí (siempre 12) -->
+                </div>
             </div>
 
-            <div class="input-group">
-                <label for="quantity"><i class="fas fa-cube icon"></i>Cantidad de etiquetas:</label>
-                <input type="number" id="quantity" min="12" value="12" onchange="createTextInputs()">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button id="generate-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">
+                    <i class="fas fa-magic icon mr-2"></i>Generar Etiquetas
+                </button>
+                <button id="print-btn" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">
+                    <i class="fas fa-print icon mr-2"></i>Imprimir
+                </button>
+                <button id="export-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out transform hover:scale-105">
+                    <i class="fas fa-file-pdf icon mr-2"></i>Exportar PDF
+                </button>
             </div>
-
-            <div class="input-group text-inputs-container" id="text-inputs-container">
-                <!-- Inputs dinámicos se generan aquí -->
-            </div>
-            <button id="generate-btn"><i class="fas fa-magic icon"></i>Generar</button>
-            <button id="print-btn" style="background-color: #e67e22;"><i class="fas fa-print icon"></i>Imprimir</button>
-            <button id="export-btn" style="background-color: #3498db;"><i class="fas fa-file-pdf icon"></i>Exportar PDF</button>
         </div>
 
-        <div id="output"></div>
+        <!-- Contenedor de Salida de Etiquetas -->
+        <div id="output" class="w-full">
+            <!-- Las páginas A4 generadas se insertarán aquí -->
+        </div>
     </div>
 
+    <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Constantes y Configuración
+        const SQUARES_PER_PAGE = 12; // 3 columnas x 4 filas
+        const FIXED_QUANTITY = 12; // Cantidad fija de etiquetas
+        const DEFAULT_FONT_SIZE_PX = 48; // Tamaño de fuente predeterminado
+
+        // Elementos del DOM
+        const generateBtn = document.getElementById('generate-btn');
+        const exportBtn = document.getElementById('export-btn');
+        const printBtn = document.getElementById('print-btn');
+        const textInputsContainer = document.getElementById('text-inputs-container');
+        const outputContainer = document.getElementById('output');
+
+        // --- Inicialización y Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            createTextInputs();
+        });
+
+        generateBtn.addEventListener('click', generateSquares);
+        exportBtn.addEventListener('click', exportToPDF);
+        printBtn.addEventListener('click', () => window.print());
+
+
+        // --- Funciones Principales ---
+
+        /**
+         * Ajusta el tamaño de la fuente del elemento para que su contenido quepa.
+         * @param {HTMLElement} element - El elemento cuyo texto se ajustará.
+         * @param {number} initialFontSize - El tamaño de fuente inicial en px.
+         */
+        function fitTextToSquare(element, initialFontSize) {
+            const MIN_FONT_SIZE = 6; // Tamaño mínimo de fuente en px
+            const MAX_ITERATIONS = 100; // Para evitar bucles infinitos
+            let currentFontSize = initialFontSize;
+            let iterations = 0;
+
+            element.style.fontSize = `${currentFontSize}px`;
+
+            while (
+                (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) &&
+                currentFontSize > MIN_FONT_SIZE &&
+                iterations < MAX_ITERATIONS
+            ) {
+                currentFontSize -= 1;
+                element.style.fontSize = `${currentFontSize}px`;
+                iterations++;
+            }
+        }
+
+        function createTextInputs() {
+            const quantity = FIXED_QUANTITY;
+            textInputsContainer.innerHTML = '';
+
+            for (let i = 1; i <= quantity; i++) {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'text-input-item p-3 bg-gray-600 rounded-md shadow'; 
+
+                const textLabel = document.createElement('label');
+                textLabel.className = 'block text-xs font-medium text-gray-200 mb-1';
+                textLabel.innerHTML = `<i class="fas fa-tag icon mr-1"></i>Etiqueta ${i}:`;
+                
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.className = 'text-input w-full p-2 bg-gray-500 text-white border border-gray-400 rounded-md text-sm';
+                textInput.placeholder = `Texto para etiqueta ${i}`;
+                
+                inputGroup.appendChild(textLabel);
+                inputGroup.appendChild(textInput);
+                textInputsContainer.appendChild(inputGroup);
+            }
+        }
+
+        function generateSquares() {
+            const textInputElements = Array.from(document.getElementsByClassName('text-input'));
+            outputContainer.innerHTML = '';
+
+            if (textInputElements.length === 0) { 
+                const modal = createModal("Error", "No se pudieron generar los campos para las etiquetas. Intente recargar la página.");
+                document.body.appendChild(modal);
+                return;
+            }
+
+            let currentPage = createNewPage();
+            let squareCountOnPage = 0;
+
+            textInputElements.forEach((input, index) => {
+                if (squareCountOnPage >= SQUARES_PER_PAGE) {
+                     currentPage = createNewPage();
+                     squareCountOnPage = 0;
+                }
+
+                const text = input.value.trim() || `Etiqueta ${index + 1}`;
+                const initialFontSizePx = DEFAULT_FONT_SIZE_PX; 
+
+                const square = document.createElement('div');
+                square.className = 'square';
+                square.textContent = text;
+                
+                currentPage.querySelector('.square-container').appendChild(square);
+                fitTextToSquare(square, initialFontSizePx);
+
+                squareCountOnPage++;
+            });
+        }
+
+        function createNewPage() {
+            const page = document.createElement('div');
+            page.className = 'a4-page';
+
+            const container = document.createElement('div');
+            container.className = 'square-container';
+            page.appendChild(container);
+
+            outputContainer.appendChild(page);
+            return page;
+        }
+
+        async function exportToPDF() {
+            const pages = document.querySelectorAll('.a4-page');
+            if (pages.length === 0) {
+                 const modal = createModal("Atención", "No hay etiquetas generadas para exportar. Por favor, genere las etiquetas primero.");
+                 document.body.appendChild(modal);
+                return;
+            }
+
+            const originalButtonText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin icon mr-2"></i>Exportando...';
+            exportBtn.disabled = true;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            try {
+                for (let i = 0; i < pages.length; i++) {
+                    if (i > 0) pdf.addPage();
+
+                    const canvas = await html2canvas(pages[i], {
+                        scale: 2.5,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    });
+                    const imgData = canvas.toDataURL('image/png');
+                    const pageWidth = pdf.internal.pageSize.getWidth();
+                    const pageHeight = pdf.internal.pageSize.getHeight();
+                    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+                }
+                pdf.save(`etiquetas_modulos_EL_REPA_${Date.now()}.pdf`); // Nombre de archivo PDF actualizado
+            } catch (error) {
+                console.error("Error al exportar a PDF:", error);
+                const modal = createModal("Error de Exportación", "Ocurrió un error al exportar a PDF. Revise la consola para más detalles.");
+                document.body.appendChild(modal);
+            } finally {
+                exportBtn.innerHTML = originalButtonText;
+                exportBtn.disabled = false;
+            }
+        }
+
+        function createModal(title, message) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 print-only-hidden';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-gray-700 p-6 rounded-lg shadow-xl max-w-sm w-full text-white';
+
+            const modalTitle = document.createElement('h3');
+            modalTitle.className = 'text-xl font-bold mb-4';
+            modalTitle.textContent = title;
+
+            const modalMessage = document.createElement('p');
+            modalMessage.className = 'mb-6 text-sm';
+            modalMessage.textContent = message;
+
+            const closeButton = document.createElement('button');
+            closeButton.className = 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg w-full transition duration-150 ease-in-out';
+            closeButton.textContent = 'Cerrar';
+            closeButton.onclick = () => {
+                if (modalOverlay.parentNode) {
+                   document.body.removeChild(modalOverlay);
+                }
+            };
+
+            modalContent.appendChild(modalTitle);
+            modalContent.appendChild(modalMessage);
+            modalContent.appendChild(closeButton);
+            modalOverlay.appendChild(modalContent);
+
+            modalOverlay.addEventListener('click', (event) => {
+                if (event.target === modalOverlay) {
+                    if (modalOverlay.parentNode) {
+                        document.body.removeChild(modalOverlay);
+                    }
+                }
+            });
+            return modalOverlay;
+        }
+    </script>
 </body>
 </html>
