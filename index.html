@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de etiquetas para módulos EL REPA</title>
+    <title>Etiquetas para cajas de módulos - EL REPA</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome CDN -->
@@ -25,17 +25,16 @@
             display: flex;
             justify-content: center; /* Centra el square-container horizontalmente */
             align-items: center;   /* Centra el square-container verticalmente */
-            padding: 0; /* Eliminamos padding para que el container de 21x28cm se posicione bien */
+            padding: 0; 
         }
 
         .square-container {
             display: grid;
-            grid-template-columns: repeat(3, 7cm); /* 3 columnas de 7cm */
-            grid-template-rows: repeat(4, 7cm);    /* 4 filas de 7cm */
-            gap: 0; /* Sin espacio entre cuadrados */
-            width: 21cm;  /* Ancho total: 3 * 7cm = 21cm */
-            height: 28cm; /* Alto total: 4 * 7cm = 28cm */
-            /* Este contenedor se centrará en .a4-page gracias a flexbox */
+            grid-template-columns: repeat(3, 7cm); 
+            grid-template-rows: repeat(4, 7cm);    
+            gap: 0; 
+            width: 21cm;  
+            height: 28cm; 
         }
 
         .square {
@@ -45,14 +44,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 5px; /* Un pequeño padding interno para el texto */
+            padding: 5px; 
             box-sizing: border-box;
             background: white;
             color: black;
-            overflow: hidden; /* Importante: oculta el texto que desborda */
+            overflow: hidden; 
             word-break: break-word;
             text-align: center;
-            /* El tamaño de fuente inicial es 48px, ajustado por JS */
         }
 
         /* Estilos de impresión */
@@ -66,10 +64,10 @@
             }
             .a4-page {
                 box-shadow: none;
-                margin: 0 auto; /* Centrar la página en la vista de impresión si es necesario */
-                padding: 0; /* Sin padding para usar todo el espacio */
+                margin: 0 auto; 
+                padding: 0; 
                 width: 21cm;
-                height: 29.7cm; /* Usar toda la altura A4 */
+                height: 29.7cm; 
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -85,40 +83,37 @@
 
         /* Estilos para el tema oscuro base */
         .dark-mode {
-            background-color: #1f2937; /* bg-gray-800 */
-            color: #f3f4f6; /* text-gray-100 */
+            background-color: #1f2937; 
+            color: #f3f4f6; 
         }
         .dark-mode .controls-container {
-            background-color: #374151; /* bg-gray-700 */
+            background-color: #374151; 
         }
         .dark-mode label, .dark-mode h1 {
-            color: #f3f4f6; /* text-gray-100 */
+            color: #f3f4f6; 
         }
-        .dark-mode input, .dark-mode select { /* Aunque 'select' ya no se usa, mantenemos el estilo por si acaso */
-            background-color: #4b5563; /* bg-gray-600 */
-            color: #f3f4f6; /* text-gray-100 */
-            border-color: #6b7280; /* border-gray-500 */
-        }
-        .dark-mode .text-input-group {
-            background-color: #4b5563; /* bg-gray-600 */
+        .dark-mode input, .dark-mode select, .dark-mode textarea { 
+            background-color: #4b5563; 
+            color: #f3f4f6; 
+            border-color: #6b7280; 
         }
         .dark-mode .icon {
-            color: #9ca3af; /* text-gray-400 */
+            color: #9ca3af; 
         }
          /* Scrollbar styling for webkit browsers */
-        .text-inputs-container::-webkit-scrollbar {
+        #labels-textarea::-webkit-scrollbar {
             width: 8px;
         }
-        .text-inputs-container::-webkit-scrollbar-track {
-            background: #4b5563; /* bg-gray-600 */
+        #labels-textarea::-webkit-scrollbar-track {
+            background: #4b5563; 
             border-radius: 10px;
         }
-        .text-inputs-container::-webkit-scrollbar-thumb {
-            background: #6b7280; /* bg-gray-500 */
+        #labels-textarea::-webkit-scrollbar-thumb {
+            background: #6b7280; 
             border-radius: 10px;
         }
-        .text-inputs-container::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af; /* bg-gray-400 */
+        #labels-textarea::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
         }
 
     </style>
@@ -128,15 +123,11 @@
     <div class="container w-full max-w-4xl mx-auto flex flex-col">
         <!-- Contenedor de Controles -->
         <div class="controls-container bg-gray-700 p-6 rounded-lg shadow-xl mb-8 print-only-hidden">
-            <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Generador de etiquetas para módulos EL REPA</h1>
+            <h1 class="text-3xl font-bold text-center mb-6 text-white"><i class="fas fa-tags icon mr-2"></i>Etiquetas para cajas de módulos - EL REPA</h1>
             
-            <!-- Sección de selección de tamaño de fuente eliminada -->
-
             <div class="input-group mb-6">
-                 <label class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-edit icon mr-1"></i>Textos para las 12 Etiquetas (Fuente Predeterminada 48px):</label>
-                <div id="text-inputs-container" class="text-inputs-container max-h-[60vh] overflow-y-auto p-4 bg-gray-800 rounded-md border border-gray-600 space-y-4">
-                    <!-- Inputs dinámicos de texto se generan aquí (siempre 12) -->
-                </div>
+                 <label for="labels-textarea" class="block text-sm font-medium text-gray-100 mb-2"><i class="fas fa-edit icon mr-1"></i>Textos para las Etiquetas (uno por línea, 12 por página):</label>
+                <textarea id="labels-textarea" rows="6" class="w-full p-3 bg-gray-600 text-white border border-gray-500 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Etiqueta 1&#10;Etiqueta 2&#10;Etiqueta 3..."></textarea>
             </div>
 
             <div class="flex flex-wrap justify-center gap-4">
@@ -164,27 +155,26 @@
 
     <script>
         // Constantes y Configuración
-        const SQUARES_PER_PAGE = 12; // 3 columnas x 4 filas
-        const FIXED_QUANTITY = 12; // Cantidad fija de etiquetas
-        const DEFAULT_FONT_SIZE_PX = 48; // Tamaño de fuente predeterminado
+        const SQUARES_PER_PAGE = 12; 
+        // MAX_LABELS ya no es necesario para limitar el total de etiquetas
+        const DEFAULT_FONT_SIZE_PX = 48; 
 
         // Elementos del DOM
         const generateBtn = document.getElementById('generate-btn');
         const exportBtn = document.getElementById('export-btn');
         const printBtn = document.getElementById('print-btn');
-        const textInputsContainer = document.getElementById('text-inputs-container');
+        const labelsTextarea = document.getElementById('labels-textarea'); 
         const outputContainer = document.getElementById('output');
-
+        
         // --- Inicialización y Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            createTextInputs();
+            // No se necesita inicialización adicional aquí
         });
 
         generateBtn.addEventListener('click', generateSquares);
         exportBtn.addEventListener('click', exportToPDF);
         printBtn.addEventListener('click', () => window.print());
-
-
+        
         // --- Funciones Principales ---
 
         /**
@@ -193,13 +183,14 @@
          * @param {number} initialFontSize - El tamaño de fuente inicial en px.
          */
         function fitTextToSquare(element, initialFontSize) {
-            const MIN_FONT_SIZE = 6; // Tamaño mínimo de fuente en px
-            const MAX_ITERATIONS = 100; // Para evitar bucles infinitos
+            const MIN_FONT_SIZE = 6; 
+            const MAX_ITERATIONS = 100; 
             let currentFontSize = initialFontSize;
             let iterations = 0;
 
             element.style.fontSize = `${currentFontSize}px`;
 
+            // Bucle para reducir el tamaño de la fuente si el texto desborda
             while (
                 (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) &&
                 currentFontSize > MIN_FONT_SIZE &&
@@ -211,60 +202,51 @@
             }
         }
 
-        function createTextInputs() {
-            const quantity = FIXED_QUANTITY;
-            textInputsContainer.innerHTML = '';
-
-            for (let i = 1; i <= quantity; i++) {
-                const inputGroup = document.createElement('div');
-                inputGroup.className = 'text-input-item p-3 bg-gray-600 rounded-md shadow'; 
-
-                const textLabel = document.createElement('label');
-                textLabel.className = 'block text-xs font-medium text-gray-200 mb-1';
-                textLabel.innerHTML = `<i class="fas fa-tag icon mr-1"></i>Etiqueta ${i}:`;
-                
-                const textInput = document.createElement('input');
-                textInput.type = 'text';
-                textInput.className = 'text-input w-full p-2 bg-gray-500 text-white border border-gray-400 rounded-md text-sm';
-                textInput.placeholder = `Texto para etiqueta ${i}`;
-                
-                inputGroup.appendChild(textLabel);
-                inputGroup.appendChild(textInput);
-                textInputsContainer.appendChild(inputGroup);
-            }
-        }
 
         function generateSquares() {
-            const textInputElements = Array.from(document.getElementsByClassName('text-input'));
-            outputContainer.innerHTML = '';
+            const allText = labelsTextarea.value;
+            // Dividir por salto de línea y filtrar líneas vacías
+            const labelTexts = allText.split('\n').filter(text => text.trim() !== ''); 
 
-            if (textInputElements.length === 0) { 
-                const modal = createModal("Error", "No se pudieron generar los campos para las etiquetas. Intente recargar la página.");
+            outputContainer.innerHTML = ''; // Limpiar salida anterior
+
+            if (labelTexts.length === 0) { 
+                const modal = createModal("Atención", "Por favor, ingrese al menos un texto para las etiquetas en el área de texto.");
                 document.body.appendChild(modal);
                 return;
             }
 
-            let currentPage = createNewPage();
+            let currentPage = null; // Se inicializará en el bucle o antes si hay etiquetas
             let squareCountOnPage = 0;
 
-            textInputElements.forEach((input, index) => {
-                if (squareCountOnPage >= SQUARES_PER_PAGE) {
-                     currentPage = createNewPage();
-                     squareCountOnPage = 0;
+            // Iterar sobre todos los textos de etiquetas provistos
+            for (let i = 0; i < labelTexts.length; i++) {
+                const text = labelTexts[i].trim(); 
+                
+                // Si es la primera etiqueta de una nueva página (o la primera etiqueta en general)
+                if (squareCountOnPage === 0) { 
+                     currentPage = createNewPage(); // Crear una nueva página
                 }
-
-                const text = input.value.trim() || `Etiqueta ${index + 1}`;
+                
                 const initialFontSizePx = DEFAULT_FONT_SIZE_PX; 
 
                 const square = document.createElement('div');
                 square.className = 'square';
                 square.textContent = text;
                 
-                currentPage.querySelector('.square-container').appendChild(square);
-                fitTextToSquare(square, initialFontSizePx);
+                // Asegurarse de que currentPage no sea null antes de usar querySelector
+                if (currentPage) {
+                    currentPage.querySelector('.square-container').appendChild(square);
+                    fitTextToSquare(square, initialFontSizePx);
+                }
 
-                squareCountOnPage++;
-            });
+                squareCountOnPage++; // Incrementar contador para la página actual
+
+                // Si la página actual está llena y hay más etiquetas por procesar, resetear para la siguiente iteración
+                if (squareCountOnPage >= SQUARES_PER_PAGE) {
+                    squareCountOnPage = 0; // Se reseteará para la próxima etiqueta que necesite una nueva página
+                }
+            }
         }
 
         function createNewPage() {
@@ -281,7 +263,8 @@
 
         async function exportToPDF() {
             const pages = document.querySelectorAll('.a4-page');
-            if (pages.length === 0) {
+            // Condición de verificación más robusta
+            if (pages.length === 0 || outputContainer.children.length === 0 || !outputContainer.querySelector('.square')) {
                  const modal = createModal("Atención", "No hay etiquetas generadas para exportar. Por favor, genere las etiquetas primero.");
                  document.body.appendChild(modal);
                 return;
@@ -291,7 +274,7 @@
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin icon mr-2"></i>Exportando...';
             exportBtn.disabled = true;
 
-            const { jsPDF } = window.jspdf;
+            const { jsPDF } = window.jspdf; // Acceder a jsPDF desde el objeto window
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -303,17 +286,17 @@
                     if (i > 0) pdf.addPage();
 
                     const canvas = await html2canvas(pages[i], {
-                        scale: 2.5,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff'
+                        scale: 2.5, // Aumentar la escala para mejor calidad de imagen
+                        useCORS: true, // Si se usaran imágenes externas
+                        logging: false, // Desactivar logs de html2canvas en consola
+                        backgroundColor: '#ffffff' // Asegurar fondo blanco para el canvas
                     });
                     const imgData = canvas.toDataURL('image/png');
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
                     pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
                 }
-                pdf.save(`etiquetas_modulos_EL_REPA_${Date.now()}.pdf`); // Nombre de archivo PDF actualizado
+                pdf.save(`etiquetas_cajas_modulos_EL_REPA_${Date.now()}.pdf`);
             } catch (error) {
                 console.error("Error al exportar a PDF:", error);
                 const modal = createModal("Error de Exportación", "Ocurrió un error al exportar a PDF. Revise la consola para más detalles.");
@@ -323,7 +306,7 @@
                 exportBtn.disabled = false;
             }
         }
-
+        
         function createModal(title, message) {
             const modalOverlay = document.createElement('div');
             modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 print-only-hidden';
@@ -336,7 +319,7 @@
             modalTitle.textContent = title;
 
             const modalMessage = document.createElement('p');
-            modalMessage.className = 'mb-6 text-sm';
+            modalMessage.className = 'mb-6 text-sm break-words';
             modalMessage.textContent = message;
 
             const closeButton = document.createElement('button');
